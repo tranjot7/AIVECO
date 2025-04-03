@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IVECO AI Financing Assistant</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+      margin: 0;
+      background: linear-gradient(to bottom right, #003399, #ffffff);
+      color: #333;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #003399;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    select, input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px 24px;
+      background-color: #003399;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #002277;
+    }
+    .output-box {
+      background: #eef3fc;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 30px;
+      line-height: 1.6;
+    }
+    .output-box h3 {
+      color: #003399;
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>IVECO AI Financing Assistant</h1>
+  <p>Get personalized financing suggestions for your commercial fleet customers using smart inputs below.</p>
+
+  <div class="form-group">
+    <label for="fleetType">Type of Fleet</label>
+    <select id="fleetType" onchange="updateFleetSizeOptions()">
+      <option value="Vans">Vans</option>
+      <option value="Trucks">Trucks</option>
+      <option value="Both">Both Vans and Trucks</option>
+    </select>
+  </div>
+
+  <div class="form-group" id="fleetSizeVansGroup">
+    <label for="fleetSizeVans">Number of Vans</label>
+    <select id="fleetSizeVans">
+      <option value="0">0</option>
+      <option value="0–3">0–3</option>
+      <option value="4–10">4–10</option>
+      <option value="10+">10+</option>
+    </select>
+  </div>
+
+  <div class="form-group" id="fleetSizeTrucksGroup" style="display:none;">
+    <label for="fleetSizeTrucks">Number of Trucks</label>
+    <select id="fleetSizeTrucks">
+      <option value="0">0</option>
+      <option value="0–3">0–3</option>
+      <option value="4–10">4–10</option>
+      <option value="10+">10+</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="businessType">Business Type</label>
+    <select id="businessType">
+      <option value="Last Mile Delivery">Last Mile Delivery</option>
+      <option value="Intercity Freight Transport">Intercity Freight Transport</option>
+      <option value="Intracity Work">Intracity Work</option>
+      <option value="Long-Haul Delivery">Long-Haul Delivery</option>
+      <option value="Cross-Country Transport">Cross-Country Transport</option>
+      <option value="Other">Other</option>
+    </select>
+    <input type="text" id="businessTypeOther" placeholder="Please specify" style="display:none; margin-top: 10px;" />
+  </div>
+
+  <script>
+    function updateFleetSizeOptions() {
+      const fleetType = document.getElementById("fleetType").value;
+      document.getElementById("fleetSizeVansGroup").style.display = (fleetType === "Vans" || fleetType === "Both") ? "block" : "none";
+      document.getElementById("fleetSizeTrucksGroup").style.display = (fleetType === "Trucks" || fleetType === "Both") ? "block" : "none";
+    }
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById('businessType').addEventListener('change', () => {
+        const otherInput = document.getElementById('businessTypeOther');
+        otherInput.style.display = document.getElementById('businessType').value === 'Other' ? 'block' : 'none';
+      });
+    });
+  </script>
+
+  <div class="form-group">
+    <label for="crmHistory">CRM History</label>
+    <select id="crmHistory">
+      <option value="New Customer">New Customer</option>
+      <option value="Medium-Term Customer">Medium-Term Customer</option>
+      <option value="Long-Term Customer">Long-Term Customer</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="repaymentHistory">Repayment History</label>
+    <select id="repaymentHistory">
+      <option value="No History Available">No History Available</option>
+      <option value="Good">Good Track Record</option>
+      <option value="Excellent">Excellent Track Record</option>
+      <option value="Poor">Poor Track Record (Missed Payments, etc.)</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="industryType">Industry Type</label>
+    <select id="industryType">
+      <option value="Urban Logistics">Urban Logistics</option>
+      <option value="Freight">Freight</option>
+      <option value="City Work">City Work (Electrician, Plumber, etc.)</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="industryVolatility">Industry Volatility</label>
+    <select id="industryVolatility">
+      <option value="Low">Low</option>
+      <option value="Moderate">Moderate with Seasonality</option>
+      <option value="High">High</option>
+      <option value="Fuel-Linked">Fuel-Linked Market</option>
+    </select>
+  </div>
+
+  <button onclick="generateAIOutput()">Generate AI Financing Recommendation</button>
+
+  <div id="summaryTable" class="output-box" style="display:none;"></div>
+  <div id="macroOutput" class="output-box" style="display:none;"></div>
+  <div id="aiOutput" class="output-box" style="display:none;"></div>
+</div>
+
+<script>
+function generateAIOutput() {
+  const crm = document.getElementById("crmHistory").value;
+  const repayment = document.getElementById("repaymentHistory").value;
+  const industry = document.getElementById("industryType").value;
+  const volatility = document.getElementById("industryVolatility").value;
+
+  let risk, rate, tenure, collateral, repaymentPlan;
+
+  if (repayment.includes("Excellent") && crm.includes("Long-Term")) {
+    risk = "Low";
+    rate = "Discounted Rate (Loyalty + Low Risk)";
+    tenure = "60 months";
+    collateral = "Partial waiver or cross-vehicle collateral";
+    repaymentPlan = "Seasonal plan or balloon option";
+  } else if (repayment.includes("Good") || crm.includes("Medium")) {
+    risk = "Moderate";
+    rate = "Standard Fixed Rate";
+    tenure = "48 months";
+    collateral = "Partial Collateral";
+    repaymentPlan = "Equal monthly payments";
+  } else {
+    risk = "High";
+    rate = "High-Risk Adjusted Rate";
+    tenure = "36 months";
+    collateral = "Full collateral required";
+    repaymentPlan = "Standard repayment plan";
+  }
+
+  const macroCurrent = `${industry === 'Freight' ? 'High fuel prices, global shipping delays impacting cost structure' : 'Stable input costs with moderate economic activity'}`;
+  const macroOutlook = `${volatility.includes('High') ? 'Volatile short-term with gradual stabilization expected over next 1–2 years' : 'Improving conditions with demand recovery expected in upcoming quarters'}`;
+
+  const macroContent = `
+    <h3>Macroeconomic Conditions</h3>
+    <strong>Current Scenario:</strong> ${macroCurrent}<br>
+    <strong>Outlook:</strong> ${macroOutlook}`;
+
+  const offerContent = `
+    <h3>AI-Generated Financing Offer</h3>
+    <strong>Risk Score Explanation:</strong> ${risk === 'Low' ? 'Strong repayment history and loyal customer' : risk === 'Moderate' ? 'Moderate credit indicators or new customer profile' : 'Insufficient history or poor track record'}<br>
+    <strong>Loan Confidence Match:</strong> ${risk === 'Low' ? '92%' : risk === 'Moderate' ? '78%' : '61%'}<br>
+    <strong>AI Risk Scoring:</strong> ${risk}<br>
+    <strong>Interest Rate:</strong> ${rate}<br>
+    <strong>Tenure Offered:</strong> ${tenure}<br>
+    <strong>Collateral Requirement:</strong> ${collateral}<br>
+    <strong>Repayment Plan:</strong> ${repaymentPlan}<br>
+    <em style="font-size: 12px; color: #666;">This quote is AI-generated and not a final offer. Please consult with your financing representative.</em>`;
+
+  document.getElementById("summaryTable").innerHTML = `
+    <h3>Summary</h3>
+    <table style='width:100%; border-collapse: collapse;'>
+      <tr><th style='text-align:left;'>Input</th><th style='text-align:left;'>Value</th></tr>
+      <tr><td>CRM History</td><td>${crm}</td></tr>
+      <tr><td>Repayment History</td><td>${repayment}</td></tr>
+      <tr><td>Industry Type</td><td>${industry}</td></tr>
+      <tr><td>Industry Volatility</td><td>${volatility}</td></tr>
+    </table>`;
+  document.getElementById("summaryTable").style.display = 'block';
+
+  document.getElementById("macroOutput").innerHTML = macroContent;
+  document.getElementById("macroOutput").style.display = 'block';
+
+  document.getElementById("aiOutput").innerHTML = offerContent;
+  document.getElementById("aiOutput").style.display = 'block';
+}
+</script>
+</body>
+</html>
